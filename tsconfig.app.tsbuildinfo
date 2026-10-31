@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/api.ts","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/admingate.tsx","./src/components/attendance.tsx","./src/components/register.tsx","./src/components/scanner.tsx"],"version":"5.7.3"}
