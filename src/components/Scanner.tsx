@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
 import { Camera, CheckCircle2, Keyboard, RotateCcw, TriangleAlert, XCircle } from 'lucide-react'
-import { api } from '../api'
+import { recordScan } from '../store'
 import type { Student } from '../types'
 
 type ScanResult = { message: string; student?: Student; duplicate?: boolean }
 
-export default function Scanner({ onScanned, adminPassword }: { onScanned: () => void; adminPassword: string }) {
+export default function Scanner({ onScanned }: { onScanned: () => void }) {
   const scanner = useRef<Html5Qrcode | null>(null)
   const busy = useRef(false)
   const [active, setActive] = useState(false)
@@ -25,12 +25,10 @@ export default function Scanner({ onScanned, adminPassword }: { onScanned: () =>
     if (busy.current) return
     busy.current = true; setError('')
     try {
-      const data = await api<ScanResult>('/api/attendance/scan', { method: 'POST', headers: { 'x-admin-password': adminPassword }, body: JSON.stringify({ token, deviceName: navigator.userAgent }) })
+      const data = recordScan(token)
       setResult(data); onScanned(); await stop()
     } catch (err: unknown) {
-      const typed = err as Error & { body?: ScanResult }
-      if (typed.body?.duplicate) { setResult(typed.body); await stop() }
-      else setError(typed.message || 'Không thể đọc mã này.')
+      setError(err instanceof Error ? err.message : 'Không thể đọc mã này.')
     } finally { busy.current = false }
   }
 
@@ -63,7 +61,7 @@ export default function Scanner({ onScanned, adminPassword }: { onScanned: () =>
           </div>}
         </div>
         <aside className="scanner-side">
-          <div className="status-card"><span className="status-dot" /><div><b>Hệ thống đang hoạt động</b><small>Dữ liệu sẽ được lưu ngay khi quét</small></div></div>
+          <div className="status-card"><span className="status-dot" /><div><b>Hệ thống đang hoạt động</b><small>Dữ liệu lưu ngay trên thiết bị này</small></div></div>
           <div className="manual-card"><Keyboard size={22} /><h3>Nhập mã thủ công</h3><p>Dùng khi camera không thể nhận diện.</p><textarea value={manual} onChange={e => setManual(e.target.value)} placeholder="Dán nội dung mã QR tại đây" /><button disabled={!manual.trim()} onClick={() => submitToken(manual)}>Xác nhận mã</button></div>
           {error && <div className="scan-error"><XCircle size={20} /><span>{error}</span></div>}
         </aside>

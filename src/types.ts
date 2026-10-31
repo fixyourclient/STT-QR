@@ -9,4 +9,4 @@ export type Student = {
 
 export type RegistrationResult = { student: Student; qrDataUrl: string }
 
-export type AttendanceRow = Omit<Student, 'id' | 'age'> & { id: number; scannedAt: string }
+export type AttendanceRow = Omit<Student, 'id'> & { id: string; studentId: string; scannedAt: string; date: string }

@@ -3,7 +3,7 @@ import { ClipboardList, QrCode, ScanLine, UserPlus } from 'lucide-react'
 import Register from './components/Register'
 import Scanner from './components/Scanner'
 import Attendance from './components/Attendance'
-import { api } from './api'
+import { loadAttendance, todayString } from './store'
 
 type View = 'register' | 'scan' | 'attendance'
 
@@ -13,7 +13,8 @@ export default function App() {
   const [stats, setStats] = useState({ students: 0, today: 0 })
   const refresh = () => {
     if (!adminPassword) return
-    void api<{ students: number; today: number }>('/api/stats', { headers: { 'x-admin-password': adminPassword } }).then(setStats).catch(() => lock())
+    const today = todayString()
+    setStats({ students: 0, today: loadAttendance().filter(r => r.date === today).length })
   }
   const lock = () => { sessionStorage.removeItem('adminPassword'); setAdminPassword(''); setStats({ students: 0, today: 0 }); setView('register') }
 
@@ -37,8 +38,8 @@ export default function App() {
 
       <main>
         {(!adminPassword || view === 'register') && <Register onCreated={refresh} onAdminUnlock={setAdminPassword} />}
-        {adminPassword && view === 'scan' && <Scanner adminPassword={adminPassword} onScanned={refresh} />}
-        {adminPassword && view === 'attendance' && <Attendance adminPassword={adminPassword} />}
+        {adminPassword && view === 'scan' && <Scanner onScanned={refresh} />}
+        {adminPassword && view === 'attendance' && <Attendance />}
       </main>
 
       <footer>Không chia sẻ mã QR cá nhân của bạn cho người khác.</footer>

@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { Check, Download, RotateCcw } from 'lucide-react'
-import { api } from '../api'
+import QRCode from 'qrcode'
+import { ADMIN_PASSWORD, encodeStudent } from '../store'
 import type { RegistrationResult } from '../types'
 import duck from '../assets/duck.webp'
 import duckPhotographer from '../assets/duck-photographer.webp'
@@ -22,25 +23,28 @@ export default function Register({ onCreated, onAdminUnlock }: { onCreated: () =
   const updateName = (value: string) => {
     update('fullName', value)
     if (adminTimer.current) clearTimeout(adminTimer.current)
-    if (!/^\d{4,12}$/.test(value.trim())) return
-    adminTimer.current = setTimeout(async () => {
-      try {
-        await api<{ ok: true }>('/api/admin/verify', { method: 'POST', headers: { 'x-admin-password': value.trim() } })
-        sessionStorage.setItem('adminPassword', value.trim())
-        setForm(current => ({ ...current, fullName: '' }))
-        onAdminUnlock(value.trim())
-      } catch { /* Mã không đúng được giữ như câu trả lời thông thường. */ }
+    if (value.trim() !== ADMIN_PASSWORD) return
+    adminTimer.current = setTimeout(() => {
+      sessionStorage.setItem('adminPassword', value.trim())
+      setForm(current => ({ ...current, fullName: '' }))
+      onAdminUnlock(value.trim())
     }, 450)
   }
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     setLoading(true); setError('')
     try {
-      const data = await api<RegistrationResult>('/api/students', {
-        method: 'POST', body: JSON.stringify({ ...form, age: Number(form.age), classNumber: Number(form.classNumber) }),
-      })
-      setResult(data); onCreated()
-    } catch (err) { setError(err instanceof Error ? err.message : 'Không thể đăng ký.') }
+      const fullName = form.fullName.trim(), className = form.className.trim().toUpperCase()
+      const age = Number(form.age), classNumber = Number(form.classNumber)
+      if (fullName.length < 2) throw new Error('Họ tên chưa hợp lệ.')
+      if (!Number.isInteger(age) || age < 5 || age > 100) throw new Error('Tuổi phải từ 5 đến 100.')
+      if (!className) throw new Error('Tên lớp chưa hợp lệ.')
+      if (!Number.isInteger(classNumber) || classNumber < 1 || classNumber > 999) throw new Error('Số thứ tự chưa hợp lệ.')
+      if (!form.division) throw new Error('Vui lòng chọn ban.')
+      const student = { id: crypto.randomUUID(), fullName, age, className, classNumber, division: form.division }
+      const qrDataUrl = await QRCode.toDataURL(encodeStudent(student), { width: 900, margin: 2, errorCorrectionLevel: 'M' })
+      setResult({ student, qrDataUrl }); onCreated()
+    } catch (err) { setError(err instanceof Error ? err.message : 'Không thể tạo mã QR.') }
     finally { setLoading(false) }
   }
 
