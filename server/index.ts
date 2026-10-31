@@ -161,7 +161,9 @@ if (fs.existsSync(dist)) {
 }
 
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(error); res.status(500).json({ message: 'Máy chủ gặp lỗi không mong muốn.' })
+  console.error(error)
+  if ((error as { type?: string })?.type === 'entity.parse.failed') return res.status(400).json({ message: 'Dữ liệu gửi lên không hợp lệ.' })
+  res.status(500).json({ message: 'Máy chủ gặp lỗi không mong muốn.' })
 })
 
 app.listen(port, '0.0.0.0', () => console.log(`API CSV đang chạy tại http://localhost:${port}`))
