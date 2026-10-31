@@ -64,7 +64,6 @@ export default function Register({ onCreated, onAdminUnlock }: { onCreated: () =
         <p>Cảm ơn bạn đã hoàn tất biểu mẫu. Hãy tải mã QR và giữ lại để điểm danh.</p>
       </div>
       <div className="qr-card">
-        <div className="success-icon"><Check size={22} /></div>
         <img src={result.qrDataUrl} alt={`Mã QR của ${result.student.fullName}`} />
         <h2>{result.student.fullName}</h2>
         <p>{result.student.className} · Số {result.student.classNumber}</p>
