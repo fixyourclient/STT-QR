@@ -90,7 +90,7 @@ export default function Register({ onCreated, onAdminUnlock }: { onCreated: () =
         <label className="question-card"><span>Tuổi <i>*</i></span><input required type="number" inputMode="numeric" min="5" max="100" value={form.age} onChange={e => update('age', e.target.value)} placeholder="Câu trả lời của bạn" /></label>
         <label className="question-card"><span>Lớp <i>*</i></span><input required value={form.className} onChange={e => update('className', e.target.value)} placeholder="Ví dụ: 12A1" maxLength={30} /></label>
         <label className="question-card"><span>Số thứ tự trong lớp <i>*</i></span><input required type="number" inputMode="numeric" min="1" max="999" value={form.classNumber} onChange={e => update('classNumber', e.target.value)} placeholder="Câu trả lời của bạn" /></label>
-        <label className="question-card"><span>Ban học <i>*</i></span>
+        <label className="question-card"><span>Ban Chuyên Trách <i>*</i></span>
           <select required value={form.division} onChange={e => update('division', e.target.value)}>
             <option value="" disabled>Chọn</option>
             {divisions.map(item => <option key={item}>{item}</option>)}
